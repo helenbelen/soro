@@ -37,23 +37,37 @@
     var form = document.getElementById('form');
     var input = document.getElementById('input');
 
+    window.addEventListener('mousemove', function (e) {
+        let session = window.sessionStorage
+        let id = session.getItem("userId")
+        if (!id) {
+            let user = prompt("Please enter your name");
+            if (user != null && user.trim().length > 0) {
+                session.setItem("userId", user)
+                socket.emit('message', `${user} entered.`);
+            }
+        }
+    })
     form.addEventListener('submit', function (e) {
         e.preventDefault();
         if (input.value) {
-            socket.emit('chat message', input.value);
+            socket.emit('message', input.value);
             input.value = '';
         }
     });
-
-    socket.on('chat message', function (msg) {
+    socket.on('connection', function (user) {
+        let session = window.sessionStorage
+        session.setItem("socketId", user)
         var item = document.createElement('li');
-        item.textContent = msg;
+        item.textContent = user + " connected.";
         messages.appendChild(item);
         window.scrollTo(0, document.body.scrollHeight);
     });
-    socket.on('connected', function (msg) {
+    socket.on('message', function (msg) {
+        let session = window.sessionStorage
+        let id = session.getItem("userId")
         var item = document.createElement('li');
-        item.textContent = msg;
+        item.textContent = id + " : " + msg;
         messages.appendChild(item);
         window.scrollTo(0, document.body.scrollHeight);
     });

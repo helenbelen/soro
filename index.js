@@ -10,9 +10,9 @@ app.get('/', (req, res) => {
 });
 
 io.on('connection', (socket) => {
-    io.emit('connected',  socket.id + " connected.")
-    socket.on('chat message', (msg) => {
-        io.emit('chat message', msg);
+    io.emit('connection',  socket.id)
+    socket.on('message', (msg) => {
+        io.emit('message', msg);
     });
 });
 
