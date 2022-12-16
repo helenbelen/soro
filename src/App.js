@@ -1,14 +1,23 @@
 import React, {useState} from "react";
 import './App.css';
-import {Box, Button, Grid, Grommet, Heading, Page, Paragraph, TextInput} from 'grommet';
-import { io } from "socket.io-client";
+import {Box, Button, Footer, Grid, Grommet, Header, Heading, Paragraph, TextInput} from 'grommet';
+import {io} from "socket.io-client";
 
 const URL = "http://localhost:9000";
-const socket = io(URL, { autoConnect: true });
+const socket = io(URL, {autoConnect: true});
 
 function emitMessage(message) {
     socket.emit("message", message)
 }
+
+function getSocketId() {
+    return window.sessionStorage.getItem("socketId")
+}
+
+function isConnected() {
+    return socket.connected
+}
+
 const theme = {
     global: {
         font: {
@@ -24,6 +33,8 @@ function App() {
 
     const [messages, setMessages] = useState([])
     const [newMessage, setNewMessage] = useState("")
+    const socketId = getSocketId()
+    const isSocketConnected = isConnected()
     return (
         <Grommet theme={theme}>
             <Grid
@@ -40,27 +51,37 @@ function App() {
                     <Heading level={"3"} margin={"xsmall"}>soro</Heading>
                 </Box>
                 <Box gridArea="nav" direction={"column"} background={"light-5"}/>
-                <Box gridArea="main" direction={"column"} background={"light-2"}>
-                    <Page alignSelf={"start"}>
+                <Box overflow={"scroll"} gridArea="main" direction={"column"} background={"light-2"} justify={"between"}>
+                    <Header direction={"column"} gap={"xxsmall"}>
                         {messages && messages.map((message, i) => [
-                            <Paragraph key={i}>
-                                {message}
+                            <Paragraph color={i % 2 === 0 ? "brand" : "black"} fill key={i} margin={{left: "small"}} alignSelf={"start"} size={"large"}>
+                                {socketId} : {message}
                             </Paragraph>
                         ])}
-                    </Page>
-                    <Box direction={"row"}>
+                    </Header>
+                    <Footer>
                         <TextInput
+                            value={newMessage}
                             placeholder={"enter your message"}
-                            onChange={(event) => setNewMessage(event.target.value)}
+                            onChange={(event) => {
+                                if (event.target.value.length > 0) {
+                                    setNewMessage(event.target.value)
+                                }
+                            }}
                         />
                         <Button label={"enter"} onClick={(event) => {
-                            setMessages([...messages, newMessage])
-                            emitMessage(newMessage)
+                            if (!isSocketConnected) {
+                                alert("Socket is not connected. Is server on?");
+                            }
+                            else if (newMessage && newMessage.length > 0) {
+                                setMessages([...messages, newMessage])
+                                emitMessage(newMessage)
+                            }
+                            setNewMessage("")
                         }}/>
-                    </Box>
+                    </Footer>
                 </Box>
-                <Box gridArea="footer" background={"brand"}>
-                </Box>
+                <Footer gridArea={"footer"} background={"brand"} pad="small"/>
             </Grid>
         </Grommet>
     );
