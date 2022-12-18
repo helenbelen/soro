@@ -34,23 +34,6 @@
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
-    <script type="module">
-      import { io } from "https://cdn.socket.io/4.4.1/socket.io.esm.min.js";
-      const URL = "http://localhost:9000";
-      const socket = io(URL, { autoConnect: true });
-      socket.onAny((event, ...args) => {
-        console.log(event, args);
-      });
-
-      socket.on('connection', function (user) {
-        let session = window.sessionStorage
-        session.setItem("socketId", user)
-      });
-
-      socket.on('message', function (msg) {
-        console.log(msg)
-      });
-    </script>
     <div id="root"></div>
     <!--
       This HTML file is a template.
