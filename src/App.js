@@ -1,22 +1,7 @@
-import React, {useState} from "react";
+import React, {useEffect, useState} from "react";
 import './App.css';
-import {Box, Button, Footer, Grid, Grommet, Header, Heading, Paragraph, TextInput} from 'grommet';
-import {io} from "socket.io-client";
-
-const URL = "http://localhost:9000";
-const socket = io(URL, {autoConnect: true});
-
-function emitMessage(message) {
-    socket.emit("message", message)
-}
-
-function getSocketId() {
-    return window.sessionStorage.getItem("socketId")
-}
-
-function isConnected() {
-    return socket.connected
-}
+import {Box, Button, Footer, Grid, Grommet, Header, Heading, Layer, Paragraph, TextInput} from 'grommet';
+import { emitMessage, getSessionId, connect, isConnected, getUserId } from './socket-utils'
 
 const theme = {
     global: {
@@ -33,8 +18,25 @@ function App() {
 
     const [messages, setMessages] = useState([])
     const [newMessage, setNewMessage] = useState("")
-    const socketId = getSocketId()
+    const [openModal, setOpenModal] = useState(false)
+    const [user, setUser] = useState(null)
+    const socketId = getSessionId()
     const isSocketConnected = isConnected()
+
+    useEffect(() => {
+        if (!user) {
+            const id = getUserId()
+            if (id) {
+                connect(id)
+                setUser(id)
+            } else {
+                setOpenModal(true)
+            }
+        }
+        else if (!isSocketConnected) {
+            connect(user)
+        }
+    }, [user, setUser])
     return (
         <Grommet theme={theme}>
             <Grid
@@ -55,7 +57,7 @@ function App() {
                     <Header direction={"column"} gap={"xxsmall"}>
                         {messages && messages.map((message, i) => [
                             <Paragraph color={i % 2 === 0 ? "brand" : "black"} fill key={i} margin={{left: "small"}} alignSelf={"start"} size={"large"}>
-                                {socketId} : {message}
+                                {user} [{socketId}]: {message}
                             </Paragraph>
                         ])}
                     </Header>
@@ -69,11 +71,8 @@ function App() {
                                 }
                             }}
                         />
-                        <Button label={"enter"} onClick={(event) => {
-                            if (!isSocketConnected) {
-                                alert("Socket is not connected. Is server on?");
-                            }
-                            else if (newMessage && newMessage.length > 0) {
+                        <Button label={"enter"} onClick={() => {
+                            if (newMessage && newMessage.length > 0) {
                                 setMessages([...messages, newMessage])
                                 emitMessage(newMessage)
                             }
@@ -83,6 +82,21 @@ function App() {
                 </Box>
                 <Footer gridArea={"footer"} background={"brand"} pad="small"/>
             </Grid>
+            {openModal && <Layer>
+                <Box direction={"row"} gap={"small"} margin={"small"}>
+                <TextInput size={"small"} placeholder={"enter a username"} onChange={(event) => {
+                    if (event.target.value.length > 0) {
+                        setUser(event.target.value)
+                    }}
+                }/>
+                <Button label={"enter"} onClick={() => {
+                    if (user && user.length > 0) {
+                        connect(user)
+                        setOpenModal(false)
+                    }
+                }} />
+                </Box>
+            </Layer>}
         </Grommet>
     );
 }
