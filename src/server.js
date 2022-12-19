@@ -43,11 +43,17 @@ io.on('connection', async (socket) => {
         username: socket.username,
         connected: true,
     });
+    socket.join(socket.username + "-room");
 
+    let clientRooms = []
+    socket.rooms.forEach((room) => {
+        clientRooms.push(room)
+    })
     socket.emit("session", {
         username: socket.username,
         sessionID: socket.sessionID,
         userID: socket.userID,
+        rooms: clientRooms
     });
 
     socket.broadcast.emit("user connected", {
@@ -57,9 +63,8 @@ io.on('connection', async (socket) => {
         messages: [],
     });
 
-    socket.join(socket.userID);
     socket.on("disconnect", async () => {
-        const matchingSockets = await io.in(socket.userID).allSockets();
+        const matchingSockets = await io.in(socket.userID).fetchSockets();
         const isDisconnected = matchingSockets.size === 0;
         if (isDisconnected) {
             // notify other users
