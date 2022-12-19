@@ -1,7 +1,8 @@
 import React, {useEffect, useState} from "react";
 import './App.css';
-import {Box, Button, Footer, Grid, Grommet, Header, Heading, Layer, Paragraph, TextInput} from 'grommet';
-import { emitMessage, getSessionId, connect, isConnected, getUserId } from './socket-utils'
+import {Box, Button, Footer, Grid, Grommet, Header, Heading, Layer, Nav, Paragraph, Text, TextInput} from 'grommet';
+import {emitMessage, getSessionId, connect, isConnected, getUserId, getRoomId} from './socket-utils'
+import {SidebarButton} from "./components/SidebarButton";
 
 const theme = {
     global: {
@@ -20,9 +21,10 @@ function App() {
     const [newMessage, setNewMessage] = useState("")
     const [openModal, setOpenModal] = useState(false)
     const [user, setUser] = useState(null)
+    const [active, setActive] = useState();
     const socketId = getSessionId()
     const isSocketConnected = isConnected()
-
+    const room = getRoomId()
     useEffect(() => {
         if (!user) {
             const id = getUserId()
@@ -32,8 +34,7 @@ function App() {
             } else {
                 setOpenModal(true)
             }
-        }
-        else if (!isSocketConnected) {
+        } else if (!isSocketConnected) {
             connect(user)
         }
     }, [user, setUser])
@@ -52,11 +53,24 @@ function App() {
                 <Box gridArea={'header'} direction={"column"} background={"brand"} alignContent={"center"}>
                     <Heading level={"3"} margin={"xsmall"}>soro</Heading>
                 </Box>
-                <Box gridArea="nav" direction={"column"} background={"light-5"}/>
-                <Box overflow={"scroll"} gridArea="main" direction={"column"} background={"light-2"} justify={"between"}>
+                <Box gridArea="nav" direction={"column"} background={"light-5"}>
+                    <Nav background="brand">
+                        {room && [room].map((label) => (
+                            <SidebarButton
+                                key={label}
+                                label={<Text color="white">{label}</Text>}
+                                active={label === active}
+                                onClick={() => setActive(label)}
+                            />
+                        ))}
+                    </Nav>
+                </Box>
+                <Box overflow={"scroll"} gridArea="main" direction={"column"} background={"light-2"}
+                     justify={"between"}>
                     <Header direction={"column"} gap={"xxsmall"}>
                         {messages && messages.map((message, i) => [
-                            <Paragraph color={i % 2 === 0 ? "brand" : "black"} fill key={i} margin={{left: "small"}} alignSelf={"start"} size={"large"}>
+                            <Paragraph color={i % 2 === 0 ? "brand" : "black"} fill key={i} margin={{left: "small"}}
+                                       alignSelf={"start"} size={"large"}>
                                 {user} [{socketId}]: {message}
                             </Paragraph>
                         ])}
@@ -84,17 +98,18 @@ function App() {
             </Grid>
             {openModal && <Layer>
                 <Box direction={"row"} gap={"small"} margin={"small"}>
-                <TextInput size={"small"} placeholder={"enter a username"} onChange={(event) => {
-                    if (event.target.value.length > 0) {
-                        setUser(event.target.value)
-                    }}
-                }/>
-                <Button label={"enter"} onClick={() => {
-                    if (user && user.length > 0) {
-                        connect(user)
-                        setOpenModal(false)
+                    <TextInput size={"small"} placeholder={"enter a username"} onChange={(event) => {
+                        if (event.target.value.length > 0) {
+                            setUser(event.target.value)
+                        }
                     }
-                }} />
+                    }/>
+                    <Button label={"enter"} onClick={() => {
+                        if (user && user.length > 0) {
+                            connect(user)
+                            setOpenModal(false)
+                        }
+                    }}/>
                 </Box>
             </Layer>}
         </Grommet>
