@@ -1,10 +1,12 @@
 import React, {useEffect, useState} from "react";
 import './App.css';
 import {Box, Button, Footer, Grid, Grommet, Header, Heading, Layer, Nav, Paragraph, Text, TextInput} from 'grommet';
-import {emitMessage, getSessionId, connect, isConnected, getUserId, getRoomId} from './socket-utils'
+import {emitMessage, getSessionId, connect, isConnected, getRooms} from './socket-utils'
 import {SidebarButton} from "./components/SidebarButton";
 import {SidebarButtonIcon} from "./components/SidebarButtonIcon";
 import {Add} from "grommet-icons";
+import {useDispatch, useSelector} from "react-redux";
+import {addRooms, addSessionId, addUsername} from "./redux/slices/socketSlice";
 
 const theme = {
     global: {
@@ -23,23 +25,24 @@ function App() {
     const [newMessage, setNewMessage] = useState("")
     const [openModal, setOpenModal] = useState(false)
     const [user, setUser] = useState(null)
+    const dispatch = useDispatch()
+    const socketSlice = useSelector((state) => state.socketSlice)
     const [active, setActive] = useState();
-    const socketId = getSessionId()
+    const socketId = socketSlice.sessionId
     const isSocketConnected = isConnected()
-    const room = getRoomId()
-    useEffect(() => {
-        if (!user) {
-            const id = getUserId()
-            if (id) {
-                connect(id)
-                setUser(id)
-            } else {
-                setOpenModal(true)
-            }
-        } else if (!isSocketConnected) {
-            connect(user)
+
+    function setUpStore() {
+        if (!socketSlice["username"] || !isSocketConnected) {
+            dispatch(addUsername(user))
         }
-    }, [user, setUser])
+        dispatch(addRooms(getRooms().split(",")))
+        dispatch(addSessionId(getSessionId()))
+    }
+    useEffect(() => {
+        if (!user && !socketSlice["username"]) {
+            setOpenModal(true)
+        }
+    }, [user, setOpenModal])
     return (
         <Grommet theme={theme}>
             <Grid
@@ -57,7 +60,7 @@ function App() {
                 </Box>
                 <Box gridArea="nav" direction={"column"} background={"light-5"}>
                     <Nav background="brand">
-                        {room && [room].map((label) => (
+                        {socketSlice["rooms"] && socketSlice["rooms"].map((label) => (
                             <SidebarButton
                                 key={label}
                                 label={<Text color="white">{label}</Text>}
@@ -114,6 +117,7 @@ function App() {
                     }/>
                     <Button label={"enter"} onClick={() => {
                         if (user && user.length > 0) {
+                            setUpStore()
                             connect(user)
                             setOpenModal(false)
                         }

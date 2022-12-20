@@ -1,10 +1,10 @@
 import {io} from "socket.io-client";
-
 const URL = "http://localhost:9000";
 const socket = io(URL, {
     autoConnect: false,
     reconnectionAttempts: 3
 });
+
 
 socket.onAny((event, ...args) => {
     console.log(event, args);
@@ -22,7 +22,7 @@ socket.on("session", ({ sessionID, userID, username, rooms }) => {
     // save the ID of the user
     socket.userID = userID;
     socket.username = username;
-    setRoomId(rooms[1])
+    window.sessionStorage.setItem("rooms", rooms)
     setUserId(username);
     setSessionId(sessionID)
 });
@@ -43,16 +43,12 @@ export function setSessionId(id) {
     window.sessionStorage.setItem("sessionId", id)
 }
 
-export function getRoomId() {
-    return window.sessionStorage.getItem("roomId")
-}
-
-export function setRoomId(id) {
-    window.sessionStorage.setItem("roomId", id)
-}
-
 export function getUserId() {
     return window.sessionStorage.getItem("userId")
+}
+
+export function getRooms() {
+    return window.sessionStorage.getItem("rooms")
 }
 
 export function setUserId(id) {
