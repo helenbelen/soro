@@ -3,6 +3,8 @@ import './App.css';
 import {Box, Button, Footer, Grid, Grommet, Header, Heading, Layer, Nav, Paragraph, Text, TextInput} from 'grommet';
 import {emitMessage, getSessionId, connect, isConnected, getUserId, getRoomId} from './socket-utils'
 import {SidebarButton} from "./components/SidebarButton";
+import {SidebarButtonIcon} from "./components/SidebarButtonIcon";
+import {Add} from "grommet-icons";
 
 const theme = {
     global: {
@@ -63,6 +65,12 @@ function App() {
                                 onClick={() => setActive(label)}
                             />
                         ))}
+                        <SidebarButtonIcon
+                            label={<Text color="black" size={"medium"}>Add Room</Text>}
+                            icon={<Add size='medium'/>}
+                            active={"Add Room" === active}
+                            onClick={() => setActive("Add Room")}
+                        />
                     </Nav>
                 </Box>
                 <Box overflow={"scroll"} gridArea="main" direction={"column"} background={"light-2"}

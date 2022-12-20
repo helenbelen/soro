@@ -1,14 +1,17 @@
 import React from "react";
 import {Box, Button} from "grommet";
 
-export const SidebarButton = ({ label, ...rest }) => (
+export const SidebarButtonIcon = ({ label, icon, ...rest }) => (
     <Button plain {...rest}>
         {({ hover }) => (
           <Box
-            background={hover ? 'teal' : undefined}
+            background={hover ? 'teal' : 'light-3'}
             pad={{ horizontal: 'large', vertical: 'medium' }}
+            direction={"row"}
+            gap={"small"}
           >
-           {label}
+            {icon}
+            {label}
           </Box>
         )}
   </Button>
