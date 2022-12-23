@@ -35,7 +35,10 @@ function App() {
         if (!socketSlice["username"] || !isSocketConnected) {
             dispatch(addUsername(user))
         }
-        dispatch(addRooms(getRooms().split(",")))
+        let rooms = getRooms()
+        if (rooms) {
+            dispatch(addRooms(rooms.split(",")))
+        }
         dispatch(addSessionId(getSessionId()))
     }
     useEffect(() => {
