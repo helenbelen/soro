@@ -23,6 +23,44 @@ class InMemorySessionStore extends SessionStore {
     }
 }
 
+class MongoSessionStore extends SessionStore {
+
+    constructor(mongoClient) {
+        super();
+        this.collection = mongoClient.db("soro").collection("sessions");
+    }
+
+    async findSession(user) {
+        return await this.collection
+            .find({
+                username: user
+            }).toArray()
+    }
+
+    async saveSession(id, userId, userName, rooms, connected) {
+        let result = await this.collection
+            .updateOne({username: userName},{ $set: {
+                sessionID: id,
+                userID: userId,
+                username: userName,
+                rooms: rooms,
+                connected: connected,
+            }})
+        if (result.matchedCount === 0) {
+            await this.collection
+                .insertOne({
+                        sessionID: id,
+                        userID: userId,
+                        username: userName,
+                        rooms: rooms,
+                        connected: connected,
+                    })
+        }
+    }
+
+}
+
 module.exports = {
-    InMemorySessionStore
+    InMemorySessionStore,
+    MongoSessionStore
 };

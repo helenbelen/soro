@@ -17,13 +17,13 @@ socket.on("connect_error", (err) => {
 });
 
 socket.on("session", ({ sessionID, userID, username, rooms }) => {
-    // attach the session ID to the next reconnection attempts
     socket.auth = { sessionID };
-    // save the ID of the user
+    // save random ID of the user
     socket.userID = userID;
     socket.username = username;
-    window.sessionStorage.setItem("rooms", rooms)
-    setUserId(username);
+    let filteredRooms = rooms.split(",").filter((room) => room !== socket.id)
+    window.sessionStorage.setItem("rooms", filteredRooms.join(','))
+    setUserName(username);
     setSessionId(sessionID)
 });
 
@@ -43,16 +43,16 @@ export function setSessionId(id) {
     window.sessionStorage.setItem("sessionId", id)
 }
 
-export function getUserId() {
-    return window.sessionStorage.getItem("userId")
+export function getUserName() {
+    return window.sessionStorage.getItem("username")
 }
 
 export function getRooms() {
     return window.sessionStorage.getItem("rooms")
 }
 
-export function setUserId(id) {
-    window.sessionStorage.setItem("userId", id)
+export function setUserName(id) {
+    window.sessionStorage.setItem("username", id)
 }
 
 export function isConnected() {
