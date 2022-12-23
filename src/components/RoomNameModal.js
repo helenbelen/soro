@@ -1,23 +1,23 @@
 import {Box, Button, Layer, TextInput} from "grommet";
-import {connect} from "../socket-utils";
-import React from "react";
+import {joinNewRoom} from "../socket-utils";
+import React, {useState} from "react";
 
-export const UsernameModal = ({user, setUser, setUpStore, setOpenModal}) => (
-    <Layer>
+export const RoomNameModal = ({user, closeModal}) => {
+    const [room, setRoom] = useState(null);
+    return (<Layer>
         <Box direction={"row"} gap={"small"} margin={"small"}>
-            <TextInput size={"small"} placeholder={"enter a username"} onChange={(event) => {
+            <TextInput size={"small"} placeholder={"enter a room name"} onChange={(event) => {
                 if (event.target.value.length > 0) {
-                    setUser(event.target.value)
+                    setRoom(event.target.value)
                 }
             }
             }/>
             <Button label={"enter"} onClick={() => {
-                if (user && user.length > 0) {
-                    setUpStore()
-                    connect(user)
-                    setOpenModal(false)
+                if (room && room.length > 0) {
+                    joinNewRoom(user, room)
+                    closeModal()
                 }
             }}/>
         </Box>
-    </Layer>
-)
+    </Layer>)
+}
