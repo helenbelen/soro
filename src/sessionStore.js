@@ -58,6 +58,25 @@ class MongoSessionStore extends SessionStore {
         }
     }
 
+    async addNewRoom(userName, newRoom) {
+        let current = await this.collection
+            .find({
+                username: userName
+            }).toArray()
+        if (current && current.length > 0) {
+            let currentRooms = current[0].rooms
+            currentRooms.push(newRoom)
+            await this.collection
+                .updateOne({username: userName}, {
+                    $set: {
+                        rooms: currentRooms,
+                    }
+                })
+            return true
+        }
+        return false
+    }
+
 }
 
 module.exports = {

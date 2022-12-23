@@ -1,12 +1,14 @@
 import React, {useEffect, useState} from "react";
 import './App.css';
-import {Box, Button, Footer, Grid, Grommet, Header, Heading, Layer, Nav, Paragraph, Text, TextInput} from 'grommet';
-import {emitMessage, getSessionId, connect, isConnected, getRooms} from './socket-utils'
+import {Box, Button, Footer, Grid, Grommet, Header, Heading, Nav, Paragraph, Text, TextInput} from 'grommet';
+import {emitMessage, getSessionId, isConnected, getRooms} from './socket-utils'
 import {SidebarButton} from "./components/SidebarButton";
 import {SidebarButtonIcon} from "./components/SidebarButtonIcon";
 import {Add} from "grommet-icons";
 import {useDispatch, useSelector} from "react-redux";
 import {addRooms, addSessionId, addUsername} from "./redux/slices/socketSlice";
+import {UsernameModal} from "./components/UsernameModal";
+import {RoomNameModal} from "./components/RoomNameModal";
 
 const theme = {
     global: {
@@ -24,9 +26,11 @@ function App() {
     const [messages, setMessages] = useState([])
     const [newMessage, setNewMessage] = useState("")
     const [openModal, setOpenModal] = useState(false)
+    const [openRoomModal, setOpenRoomModal] = useState(false)
     const [user, setUser] = useState(null)
     const dispatch = useDispatch()
     const socketSlice = useSelector((state) => state.socketSlice)
+    const [rooms, setRooms] = useState([])
     const [active, setActive] = useState();
     const socketId = socketSlice.sessionId
     const isSocketConnected = isConnected()
@@ -46,6 +50,12 @@ function App() {
             setOpenModal(true)
         }
     }, [user, setOpenModal])
+
+    useEffect(() => {
+        if (rooms !== socketSlice.rooms) {
+            setRooms(socketSlice.rooms)
+        }
+    })
     return (
         <Grommet theme={theme}>
             <Grid
@@ -62,8 +72,8 @@ function App() {
                     <Heading level={"3"} margin={"xsmall"}>soro</Heading>
                 </Box>
                 <Box gridArea="nav" direction={"column"} background={"light-5"}>
-                    <Nav background="brand">
-                        {socketSlice["rooms"] && socketSlice["rooms"].map((label) => (
+                    <Nav background={"brand"}>
+                        {rooms && rooms.map((label) => (
                             <SidebarButton
                                 key={label}
                                 label={<Text color="white">{label}</Text>}
@@ -75,7 +85,10 @@ function App() {
                             label={<Text color="black" size={"medium"}>Add Room</Text>}
                             icon={<Add size='medium'/>}
                             active={"Add Room" === active}
-                            onClick={() => setActive("Add Room")}
+                            onClick={() => {
+                                setActive("Add Room")
+                                setOpenRoomModal(true)
+                            }}
                         />
                     </Nav>
                 </Box>
@@ -110,23 +123,19 @@ function App() {
                 </Box>
                 <Footer gridArea={"footer"} background={"brand"} pad="small"/>
             </Grid>
-            {openModal && <Layer>
-                <Box direction={"row"} gap={"small"} margin={"small"}>
-                    <TextInput size={"small"} placeholder={"enter a username"} onChange={(event) => {
-                        if (event.target.value.length > 0) {
-                            setUser(event.target.value)
-                        }
-                    }
-                    }/>
-                    <Button label={"enter"} onClick={() => {
-                        if (user && user.length > 0) {
-                            setUpStore()
-                            connect(user)
-                            setOpenModal(false)
-                        }
+            {openModal && (<UsernameModal
+                    user={user}
+                    setUser={setUser}
+                    setUpStore={setUpStore}
+                    setOpenModal={setOpenModal}/>
+            )}
+            {openRoomModal && (
+                <RoomNameModal
+                    user={user}
+                    closeModal={() => {
+                        setOpenRoomModal(false)
                     }}/>
-                </Box>
-            </Layer>}
+            )}
         </Grommet>
     );
 }

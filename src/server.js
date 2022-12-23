@@ -63,9 +63,6 @@ io.use(async (socket, next) => {
     const username = socket.handshake.auth.username;
     const foundSessions = await sessionStore.findSession(username);
     if (username && foundSessions && foundSessions.length > 0) {
-        // find existing session
-        console.log("found session")
-        console.log(foundSessions)
         let session = foundSessions[0]
         socket.sessionID = session.sessionID;
         socket.userID = session.userID;
@@ -100,7 +97,6 @@ io.use(async (socket, next) => {
     next();
 });
 
-
 io.on('connection', async (socket) => {
 
     let clientRooms = []
@@ -121,6 +117,17 @@ io.on('connection', async (socket) => {
         messages: [],
     });
 
+    socket.on("joinNewRoom", async (data) => {
+        let username = data.user
+        let roomname = data.room
+        if (await sessionStore.addNewRoom(username, roomname)) {
+            socket.join(roomname)
+        } else {
+            socket.emit("error", {
+                error: `could not add ${username} to room: ${roomname}`
+            })
+        }
+    })
     socket.on("disconnect", async () => {
         const matchingSockets = await io.in(socket.userID).fetchSockets();
         const isDisconnected = matchingSockets.size === 0;
