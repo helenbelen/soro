@@ -1,10 +1,24 @@
 import React, {useEffect, useState} from "react";
 import './App.css';
-import {Box, Button, Footer, Grid, Grommet, Header, Heading, Nav, Paragraph, Text, TextInput} from 'grommet';
+import {
+    Box,
+    Button,
+    Footer,
+    Grid,
+    Grommet,
+    Header,
+    Heading,
+    Nav,
+    Paragraph,
+    Stack,
+    Text,
+    TextInput,
+    Tip
+} from 'grommet';
 import {emitMessage, getSessionId, isConnected, getRooms} from './socket-utils'
 import {SidebarButton} from "./components/SidebarButton";
 import {SidebarButtonIcon} from "./components/SidebarButtonIcon";
-import {Add} from "grommet-icons";
+import {Add, Subtract} from "grommet-icons";
 import {useDispatch, useSelector} from "react-redux";
 import {addRooms, addSessionId, addUsername} from "./redux/slices/socketSlice";
 import {UsernameModal} from "./components/UsernameModal";
@@ -45,6 +59,7 @@ function App() {
         }
         dispatch(addSessionId(getSessionId()))
     }
+
     useEffect(() => {
         if (!user && !socketSlice["username"]) {
             setOpenModal(true)
@@ -74,12 +89,20 @@ function App() {
                 <Box gridArea="nav" direction={"column"} background={"light-5"}>
                     <Nav background={"brand"}>
                         {rooms && rooms.map((label) => (
-                            <SidebarButton
-                                key={label}
-                                label={<Text color="white">{label}</Text>}
-                                active={label === active}
-                                onClick={() => setActive(label)}
-                            />
+                            <Stack anchor="right">
+                                <SidebarButton
+                                    key={label}
+                                    label={<Text color="white">{label}</Text>}
+                                    active={label === active}
+                                    onClick={() => setActive(label)}
+                                />
+                                <Tip content="leave room">
+                                <Box round="full" overflow="hidden" margin={"small"}>
+                                    <Button icon={<Subtract/>} hoverIndicator onClick={() => {
+                                    }}/>
+                                </Box>
+                                </Tip>
+                            </Stack>
                         ))}
                         <SidebarButtonIcon
                             label={<Text color="black" size={"medium"}>Add Room</Text>}
