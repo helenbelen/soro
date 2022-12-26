@@ -15,7 +15,7 @@ import {
     TextInput,
     Tip
 } from 'grommet';
-import {emitMessage, getSessionId, isConnected, getRooms} from './socket-utils'
+import {emitMessage, getSessionId, isConnected, getRooms, leaveRoom} from './socket-utils'
 import {SidebarButton} from "./components/SidebarButton";
 import {SidebarButtonIcon} from "./components/SidebarButtonIcon";
 import {Add, Subtract} from "grommet-icons";
@@ -88,17 +88,18 @@ function App() {
                 </Box>
                 <Box gridArea="nav" direction={"column"} background={"light-5"}>
                     <Nav background={"brand"}>
-                        {rooms && rooms.map((label) => (
-                            <Stack anchor="right">
+                        {rooms && rooms.map((label, i) => (
+                            <Stack key={`stack=${label}-${i}`} anchor="right">
                                 <SidebarButton
-                                    key={label}
+                                    key={`sidebarbutton-${label}`}
                                     label={<Text color="white">{label}</Text>}
                                     active={label === active}
                                     onClick={() => setActive(label)}
                                 />
-                                <Tip content="leave room">
-                                <Box round="full" overflow="hidden" margin={"small"}>
-                                    <Button icon={<Subtract/>} hoverIndicator onClick={() => {
+                                <Tip key={`tip-${label}`} content="leave room">
+                                <Box key={`box-${label}`} round="full" overflow="hidden" margin={"small"}>
+                                    <Button key={`subtractbutton-${label}`} icon={<Subtract/>} hoverIndicator onClick={() => {
+                                        leaveRoom(user, label)
                                     }}/>
                                 </Box>
                                 </Tip>
