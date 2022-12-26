@@ -72,9 +72,29 @@ class MongoSessionStore extends SessionStore {
                         rooms: currentRooms,
                     }
                 })
-            return true
+            return {"success": true, "result": currentRooms }
         }
-        return false
+        return {"success": false}
+    }
+
+    async leaveRoom(userName, roomToLeave) {
+        let current = await this.collection
+            .find({
+                username: userName
+            }).toArray()
+        if (current && current.length > 0) {
+            let currentRooms = current[0].rooms
+            if (!currentRooms.includes(roomToLeave)) return false
+            let newRoomList = currentRooms.filter((room) => room !== roomToLeave)
+            await this.collection
+                .updateOne({username: userName}, {
+                    $set: {
+                        rooms: newRoomList,
+                    }
+                })
+            return {"success": true, "result": newRoomList }
+        }
+        return {"success": false}
     }
 
 }

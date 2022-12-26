@@ -120,14 +120,33 @@ io.on('connection', async (socket) => {
     socket.on("joinNewRoom", async (data) => {
         let username = data.user
         let roomname = data.room
-        if (await sessionStore.addNewRoom(username, roomname)) {
-            socket.join(roomname)
-        } else {
-            socket.emit("error", {
-                error: `could not add ${username} to room: ${roomname}`
-            })
-        }
+        await sessionStore.addNewRoom(username, roomname).then((newRooms) => {
+            if (newRooms.success) {
+                socket.join(roomname)
+                socket.emit("roomsUpdate", newRooms.result.join(','))
+            } else {
+                socket.emit("error", {
+                    error: `could not add ${username} to room: ${roomname}`
+                })
+            }
+        })
     })
+
+    socket.on("leaveRoom", async (data) => {
+        let username = data.user
+        let roomname = data.room
+        await sessionStore.leaveRoom(username, roomname).then((newRooms) => {
+            if (newRooms.success) {
+                socket.join(roomname)
+                socket.emit("roomsUpdate",  newRooms.result.join(','))
+            } else {
+                socket.emit("error", {
+                    error: `could not remove  ${username} from room: ${roomname}`
+                })
+            }
+        })
+    })
+
     socket.on("disconnect", async () => {
         const matchingSockets = await io.in(socket.userID).fetchSockets();
         const isDisconnected = matchingSockets.size === 0;

@@ -20,6 +20,12 @@ socket.on("error", (data) => {
     console.log(data)
 })
 
+socket.on("roomsUpdate", (data) => {
+    console.log(`new rooms:${data}`)
+    window.sessionStorage.setItem("rooms", data)
+
+})
+
 socket.on("session", ({ sessionID, userID, username, rooms }) => {
     socket.auth = { sessionID };
     // save random ID of the user
@@ -41,7 +47,10 @@ export function emitMessage(message) {
 
 export function joinNewRoom(username, roomname) {
     socket.emit("joinNewRoom", {"user": username, "room": roomname})
-    connect(username)
+}
+
+export function leaveRoom(username, roomname) {
+    socket.emit("leaveRoom", {"user": username, "room": roomname})
 }
 export function getSessionId() {
     return window.sessionStorage.getItem("sessionId")
